@@ -1,18 +1,31 @@
+# ExploreData.R
+# This R file will analyse the data with visual tools.
 
+## setting the working directory
+install.packages('rstudioapi')
+library("rstudioapi") 
+## set working directory
+setwd(dirname(getActiveDocumentContext()$path))
+## read data
+dataframe <- read.table('../muscle-incomplete.txt', header = TRUE)
+
+## packages needed for analysis
+install.packages('tidyverse')
+install.packages('GGally')
+install.packages('dplyr')
 library(tidyverse)
 library(GGally)
-
-dataframe <- read.table('./muscle-incomplete.txt', header = TRUE)
+library(dplyr)
 
 # Exploring missing data by visual aids
 missing_values <- dataframe %>%
-  	gather(key = 'key', value = 'val') %>%
-  	mutate(isna = is.na(val)) %>%
-  	group_by(key) %>%
-	mutate(total = n()) %>%
+  gather(key = 'key', value = 'val') %>%
+  mutate(isna = is.na(val)) %>%
+  group_by(key) %>%
+  mutate(total = n()) %>%
 	group_by(key, total, isna) %>%
 	summarise(num.isna = n()) %>%
-	mutate(pct = num.isna / total * 100)
+  mutate(pct = num.isna / total * 100)
 
 percentage.plot <- ggplot(data = missing_values) +
 	geom_bar(aes(x = reorder(key, desc(pct)), y = pct, fill = isna), stat = 'identity', alpha = 0.9) +
@@ -53,21 +66,6 @@ summary(model)
 model1 <- lm(calhour ~ calories + weight, data = dataframe)
 summary(model1)	# Adding weight as second predictor slightly improve R-squared
 
-# ExploreData.R
-# This R file will analyse the data with visual tools.
-
-## set working directory
-setwd("./Rcode")
-
-## reading the data
-library(readr)
-data = read_table2("../data.txt")
-data = na.omit(data) # !!!!!!!!!!!!!!Missing data is omitted, This might need to change!!!!!!!!
-
-## creating descriptive stats
-install.packages("pastecs") # you need the pastecs package for the function stat.desc
-library(pastecs)
-descriptiveData = stat.desc(data) 
 
 ## creating visual aid for data analysis
 install.packages("ggpubr")
