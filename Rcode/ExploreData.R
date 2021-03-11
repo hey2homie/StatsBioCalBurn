@@ -12,10 +12,8 @@ dataframe <- read.table('../muscle-incomplete.txt', header = TRUE)
 ## packages needed for analysis
 install.packages('tidyverse')
 install.packages('GGally')
-install.packages('dplyr')
 library(tidyverse)
 library(GGally)
-library(dplyr)
 
 # Exploring missing data by visual aids
 missing_values <- dataframe %>%
