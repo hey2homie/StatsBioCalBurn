@@ -53,6 +53,52 @@ summary(estimates_weight_calhour_calories)
 # ....
 
 
+# KLAAS ALTERNATIVELY- START
+
+# Multiple imputation analysis
+
+# Standard: pnn
+imp <- mice(dataframe, m=100)
+imp
+# other option: bayesian linear
+imp <- mice(dataframe, meth = c("", "", "norm"), m=100)
+imp
+# other option: bayesian non-linear
+imp <- mice(dataframe, meth = c("", "", "norm.nob"), m=100)
+imp
+# play around with them and see what final model including imputations gives --> maybe overkill?
+
+
+## Imputed values for calories 
+## The columns contain the multiple imputations.
+imp$imp$calories[1:10,1:5]
+
+## The complete data combine observed and imputed data.
+complete(imp,1)[1:24,]
+
+## Plot the imputated values --> looks ok, same distribution as observed values
+com <- complete(imp, "long", inc=T)
+col <- rep(c("green","black")[1+as.numeric(is.na(imp$data$calories))],101)
+stripplot(calories~.imp, data=com, jit=TRUE, fac=0.8, col=col, pch=20, cex=1.4, xlab="Imputation number")
+
+## Analyzing the imputed data sets
+
+fit <- with(data=imp, exp=lm(calories ~ calhour + weight ))
+
+## Creating a data set with the results of all the analysis
+
+MI.matrix<-matrix(0,100,3)
+for(k in 1:100) MI.matrix[k,]<-coefficients(fit$analyses[[k]])
+MI.results=data.frame(Intercept=MI.matrix[,1], calhour=MI.matrix[,2],weight=MI.matrix[,3])
+MI.results[1:10,]
+## parameters for calhour stable, for weight more variation but in same line
+
+
+est <- pool(fit)
+summary(est)
+## compare this with complete case and IPW
+
+# KLAAS ALTERNATIVELY- STOP
 
 
 
