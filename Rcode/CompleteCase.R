@@ -1,64 +1,7 @@
 library(tidyverse)
-library(GGally)
 library(gridExtra)
 
 dataframe <- read.table('./muscle-incomplete.txt', header = TRUE)
-
-# Descriptive statistics
-dataframe %>% select(weight, calhour, calories) %>%
-	pivot_longer(data = ., cols = c(weight, calhour, calories), names_to = 'Variables', values_to = 'Values') %>%
-	ggplot(aes(x = Variables, y = Values)) +
-	geom_boxplot(color = 'black', fill = 'steelblue', alpha = 0.9) +
-	labs(title = 'Boxplots of available variables') +
-	theme_classic() +
-	theme(plot.title = element_text(hjust = 0.5))
-# No outliners
-
-dataframe %>% ggpairs(data = ., ) + theme(panel.grid.major = element_blank())
-
-# There is high positive correlation between variables calories and calories per hour
-dataframe %>% ggplot(data = ., aes(x = calories, y = calhour)) +
-	geom_point() +
-	geom_smooth(method = 'lm', se = FALSE) +
-	labs(x = 'Burned Calories', y = 'Calories per Hour',
-		 title = 'Relationship between heat production and work levels') +
-	theme_classic() +
-	theme(plot.title = element_text(hjust = 0.5))
-
-# Exploring missing data by visual aids
-missing_values <- dataframe %>%
-  	gather(key = 'key', value = 'val') %>%
-  	mutate(isna = is.na(val)) %>%
-  	group_by(key) %>%
-	mutate(total = n()) %>%
-	group_by(key, total, isna) %>%
-	summarise(num.isna = n()) %>%
-	mutate(pct = num.isna / total * 100)
-
-# Plot of missing values by variable in percents
-percentage.plot <- ggplot(data = missing_values) +
-	geom_bar(aes(x = reorder(key, desc(pct)), y = pct, fill = isna), stat = 'identity', alpha = 0.9) +
-	scale_fill_manual(name = '', values = c('steelblue', 'tomato3'), labels = c('Present', 'Missing')) +
-	coord_flip() +
-	labs(title = 'Percentage of missing values', x = 'Variables', y = '% of missing values') +
-	theme_classic() +
-	theme(plot.title = element_text(hjust = 0.5))
-
-# Distiburion of missing values by rows
-distibution.plot <- dataframe %>%
-	mutate(id = row_number()) %>%
-	gather(-id, key = 'key', value = 'val') %>%
-	mutate(isna = is.na(val)) %>%
-	ggplot(aes(key, id, fill = isna)) +
-		geom_raster(alpha = 0.9) +
-    	scale_fill_manual(name = '', values = c('steelblue', 'tomato3'), labels = c('Present', 'Missing')) +
-    	labs(x = 'Variables', y = 'Row Number', title = 'Missing values in rows') +
-		theme_classic() +
-		theme(plot.title = element_text(hjust = 0.5)) +
-		coord_flip()
-
-grid.arrange(percentage.plot, distibution.plot, ncol = 2)	# Display two plots in one window
-
 dataframe <- na.omit(dataframe)		# Omiting NAs to carry out complete case analysis
 
 # Exploring the results of linear regression in case of complete analysis
@@ -112,7 +55,7 @@ plotResiduals <- function(model, number = "") {
 
 	plot <- ggplot(model, aes(x = model$residuals)) +
 		geom_histogram(fill = 'steelblue', color = 'black', alpha = 0.9) +
-		labs(x = 'Residual Values', y = 'Frequency', title = sprintf('Residuals Destribution Model', number)) +
+		labs(x = 'Residual Values', y = 'Frequency', title = sprintf('Residuals Destribution of Model%s', number)) +
 		theme_classic() +
 		theme(plot.title = element_text(hjust = 0.5))
 
@@ -127,7 +70,7 @@ residualsVsFitted <- function(model, number = "") {
 		geom_point() +
 		stat_smooth(method = "loess") +
 		geom_hline(yintercept = 0, col = "tomato3", linetype = 'dashed') +
-		labs(x = 'Fitted values', y = 'Residuals', title = sprintf('Residual vs Fitted Plot of model%s', number)) +
+		labs(x = 'Fitted values', y = 'Residuals', title = sprintf('Residual vs Fitted Plot of Model%s', number)) +
 		theme_classic() +
 		theme(plot.title = element_text(hjust = 0.5))
 
@@ -140,9 +83,9 @@ qqplot <- function(model, number = "") {
 	resultQQ <- qqnorm(model$residuals)
 
 	plot <- ggplot(model, aes(x = resultQQ$x, y = resultQQ$y)) +
-		geom_point(na.rm = TRUE) +
+		geom_point() +
 		labs(x = 'Theoretical Quantiles', y = 'Standardized Residuals',
-			 title = sprintf('Normal Q-Q of model%s', number)) +
+			 title = sprintf('Normal Q-Q of Model%s', number)) +
 		theme_classic() +
 		theme(plot.title = element_text(hjust = 0.5))
 
@@ -152,10 +95,10 @@ qqplot <- function(model, number = "") {
 scaleLocation <- function(model, number = "") {
 
 	plot <- ggplot(model, aes(.fitted, sqrt(abs(.stdresid)))) +
-		geom_point(na.rm = TRUE) +
-		stat_smooth(method = "loess", na.rm = TRUE) +
+		geom_point() +
+		stat_smooth(method = "loess") +
 		labs(x = 'Fitted Value', y = expression(sqrt("|Standardized residuals|")),
-			 title = sprintf('Scale-Locationof of model%s', number)) +
+			 title = sprintf('Scale-Locationof of Model%s', number)) +
 		theme_classic() +
 		theme(plot.title = element_text(hjust = 0.5))
 
@@ -166,7 +109,32 @@ cooks <- function(model, number = "") {
 
 	plot <- ggplot(model, aes(seq_along(.cooksd), .cooksd)) +
 		geom_bar(stat = "identity", position = "identity", fill = 'steelblue', color = 'black', alpha = 0.9) +
-    	labs(x = "Obs. Number", y = "Cook's distance", title = sprintf("Cook's distance of model%s", number)) +
+    	labs(x = "Obs. Number", y = "Cook's distance", title = sprintf("Cook's distance of Model%s", number)) +
+		theme_classic() +
+		theme(plot.title = element_text(hjust = 0.5))
+
+	return(plot)
+}
+
+residualssVsLavarage <- function(model, number = "") {
+
+	plot <- ggplot(model, aes(.hat, .stdresid)) +
+		geom_point(aes(size = .cooksd)) +
+		stat_smooth(method = "loess") +
+		labs(x = "Leverage", y = "tandardized Residuals",
+			 title = sprintf("Residual vs Leverage Plot of Model%s", number)) +
+		theme_classic() +
+		theme(plot.title = element_text(hjust = 0.5))
+
+	return(plot)
+}
+cooksVsLavarage <- function(model, number = "") {
+
+	plot <- ggplot(model, aes(.hat, .cooksd)) +
+		geom_point()+
+		stat_smooth(method = "loess") +
+		labs(x = "Leverage hii", y = "Cook's distance",
+			 title = sprintf("Cook's dist vs Leverage hii/(1-hii) of Model%s", number)) +
 		theme_classic() +
 		theme(plot.title = element_text(hjust = 0.5))
 
@@ -177,7 +145,9 @@ grid.arrange(residualsVsFitted(fit), residualsVsFitted(fit1, 1),
 			 qqplot(fit), qqplot(fit1, 1),
 			 cooks(fit), cooks(fit1, 1),
 			 scaleLocation(fit), scaleLocation(fit1, 1),
-			 ncol = 2, nrow = 4)
+			 cooksVsLavarage(fit), cooksVsLavarage(fit1, 1),
+			 residualssVsLavarage(fit), residualssVsLavarage(fit1, 1),
+			 ncol = 2, nrow = 6)
 
 # Some metrics
 list(model = summary(fit), model1 = summary(fit1))	# Adding weight as second predictor slightly improve R-squared
