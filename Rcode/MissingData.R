@@ -3,7 +3,7 @@
 
 ## setting the working directory
 install.packages('rstudioapi')
-library("rstudioapi")
+library("rstudioapi") 
 ## set working directory
 setwd(dirname(getActiveDocumentContext()$path))
 ## read data
@@ -31,15 +31,16 @@ missingPlot_weight =
   arrange(weight) %>% # sorting the observations by the values of the covariate weight
   missing_plot() # This function creates the missing plot
 missingPlot_weight # sorting the observations by the values of the covariate calhour
+
 missingPlot_calhour =
   select(dataframe, calhour, calories) %>% # selecting the columns calhour and calories
   arrange(calhour) %>% # This function creates the missing plot
   missing_plot()
 missingPlot_calhour
 # The missing plot shows the distrubution of the missing values
-# It appears that the missing values in calories are NOT correlated with
+# It appears that the missing values in calories are NOT correlated with 
 # the covariate weight
-# However, it is very clear that for the covariate calhour the missing
+# However, it is very clear that for the covariate calhour the missing 
 # values are more abundant for 'low' calhour values.
 # Because the missing values depend on a covariate for which we do have data
 # we are dealing with a 'missing at random' case (MAR)

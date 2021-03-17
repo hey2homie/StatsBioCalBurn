@@ -1,7 +1,9 @@
+## CompleteCase.R
+
 library(tidyverse)
 library(gridExtra)
 
-dataframe <- read.table('./muscle-incomplete.txt', header = TRUE)
+dataframe <- read.table('../muscle-incomplete.txt', header = TRUE)
 dataframe <- na.omit(dataframe)		# Omiting NAs to carry out complete case analysis
 
 # Exploring the results of linear regression in case of complete analysis
@@ -133,4 +135,5 @@ grid.arrange(residualsVsFitted(fit1),
 			 cooksVsLavarage(fit1),
 			 residualssVsLavarage(fit1),
 			 ncol = 3, nrow = 2)
+
 
