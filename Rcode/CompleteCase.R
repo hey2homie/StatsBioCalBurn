@@ -1,8 +1,15 @@
+## CompleteCase.R
+## setting the working directory
+install.packages('rstudioapi')
+library("rstudioapi") 
+## set working directory
+setwd(dirname(getActiveDocumentContext()$path))
+## read data
+dataframe <- read.table('../muscle-incomplete.txt', header = TRUE)
+dataframe <- na.omit(dataframe)		# Omiting NAs to carry out complete case analysis
+
 library(tidyverse)
 library(gridExtra)
-
-dataframe <- read.table('./muscle-incomplete.txt', header = TRUE)
-dataframe <- na.omit(dataframe)		# Omiting NAs to carry out complete case analysis
 
 # Exploring the results of linear regression in case of complete analysis
 fit <- lm(calhour ~ calories, data = dataframe)
@@ -153,3 +160,4 @@ grid.arrange(residualsVsFitted(fit), residualsVsFitted(fit1, 1),
 list(model = summary(fit), model1 = summary(fit1))	# Adding weight as second predictor slightly improve R-squared
 list(model = anova(fit), model1 = anova(fit1))
 list(model = AIC(fit), model1 = AIC(fit1))	# Model with smaller AIC score is preferrable
+
